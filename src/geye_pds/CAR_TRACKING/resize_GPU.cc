@@ -19,6 +19,7 @@
 #include "Common.h"
 
 #include "switch_float.h"
+#include "switch_release.h"
 #include "drvapi_error_string.h"
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,16 +74,24 @@ static int          sum_size_image;
 FLOAT *Ipl_to_FLOAT_forGPU(IplImage *Input)	//get intensity data (FLOAT) of input
 {
 	const int width     = Input->width;
+#ifdef PRINT_INFO
 	printf("%d\n",width);
+#endif
 	const int height    = Input->height;
+#ifdef PRINT_INFO
 	printf("%d\n",height);
+#endif
 	const int nChannels = Input->nChannels;
+#ifdef PRINT_INFO
 	printf("%d\n",nChannels);
+#endif
 	const int SQ        = height*width;
 	const int WS        = Input->widthStep;
 
 	FLOAT *Output = (FLOAT *)malloc(sizeof(FLOAT)*height*width*nChannels);
+#ifdef PRINT_INFO
 	printf("%d",height*width*nChannels);
+#endif
 
 	FLOAT *R     = Output;
 	FLOAT *G     = Output + SQ;
@@ -219,7 +228,6 @@ void  make_image_idx_incrementer(int *resized_image_size, int LEN)
       sum_size_image += height * width * depth;
     }
   
-  CUdeviceptr image_idx_incrementer_dev;
   /* allocate GPU memory region for LUT */
   res = cuMemAlloc(&image_idx_incrementer_dev, LEN*sizeof(int));
   MY_CUDA_CHECK(res, "cuMemAlloc(image_idx_incrementer)");
@@ -382,6 +390,7 @@ void *bilinear_resizing(void *arg)
   return (void *)NULL;
 } /* bilinear_resizing() */
 
+//#define DEBUG
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -428,6 +437,14 @@ void resize_byGPU(FLOAT *org_image,
   MY_CUDA_CHECK(res, "cuMemsetD32(resized_image_dev)");
 #endif
 
+#ifdef DEBUG
+  printf("\n/*************************************************************************/\n");
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!Debug MODE is ON !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  printf(" -> pthread is not created\n");
+  printf("/*************************************************************************/\n");
+#endif
+
+
   /* resizing */
   for (int level=0; level<interval; level++)
     {
@@ -437,7 +454,11 @@ void resize_byGPU(FLOAT *org_image,
       args[thread_count].stream   = stream_array[level];
       args[thread_count].level    = level;
       
+#ifdef DEBUG
+      bilinear_resizing((void *)&args[thread_count]);      
+#else
       pthread_create(&thread[thread_count], NULL, bilinear_resizing, (void *)&args[thread_count]);
+#endif
       thread_count++;
     }
   
@@ -450,16 +471,22 @@ void resize_byGPU(FLOAT *org_image,
       args[thread_count].stream   = stream_array[level];
       args[thread_count].level    = level;
 
+#ifdef DEBUG
+      bilinear_resizing((void *)&args[thread_count]);      
+#else
       pthread_create(&thread[thread_count], NULL, bilinear_resizing, (void *)&args[thread_count]);
+#endif
       thread_count++;
     }
   
+#ifndef DEBUG
   /* wait for all pthread complete its work */
   //  for (int counter=0; counter<LEN-interval; counter++)
   for (int counter=0; counter<thread_count; counter++)
     {
       pthread_join(thread[counter], NULL);
     }
+#endif
   
   /* (interval <= level < 2*interval) use same resize scale as (0 <= level < interval) */
   for (int level=interval; level<2*interval; level++)
