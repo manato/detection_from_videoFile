@@ -20,25 +20,27 @@ base_path="../.."
 ######################################################
 echo "### start making directory... ###"
 
-mkdir ${base_path}
-mkdir ${base_path}/bin
-mkdir ${base_path}/bin/shm_creater
-mkdir ${base_path}/bin/car_detecter
-mkdir ${base_path}/bin/pedestrian_detecter
-mkdir ${base_path}/bin/sign_detecter
-mkdir ${base_path}/bin/image_receiver
-mkdir ${base_path}/bin/shm_deleter
-mkdir ${base_path}/bin/line_detecter
+mkdir -p ${base_path}
+mkdir -p ${base_path}/bin
+mkdir -p ${base_path}/bin/shm_creater
+mkdir -p ${base_path}/bin/car_detecter
+mkdir -p ${base_path}/bin/pedestrian_detecter
+mkdir -p ${base_path}/bin/sign_detecter
+mkdir -p ${base_path}/bin/image_receiver
+mkdir -p ${base_path}/bin/shm_deleter
+mkdir -p ${base_path}/bin/line_detecter
 
-mkdir ${base_path}/doc
+mkdir -p ${base_path}/doc
 
-mkdir ${base_path}/log
+mkdir -p ${base_path}/log
 
-mkdir ${base_path}/shared_memory
+mkdir -p ${base_path}/shared_memory
 
-mkdir ${base_path}/shell
+mkdir -p ${base_path}/shell
 
-mkdir ${base_path}/lib
+mkdir -p ${base_path}/lib
+
+mkdir -p ${base_path}/dst_video
 
 echo "### complete making directory... ###"
 
