@@ -2,7 +2,8 @@
 #include <math.h>
 #include "for_use_GPU.h"
 #include "calc_feature_conf.h"
-
+#include "switch_release.h"
+#include "switch_float.h"
 
 /* declaration of texture memory */
 //texture<FLOAT> A;
@@ -11,8 +12,7 @@ texture<float, cudaTextureType1D, cudaReadModeElementType> A;
 texture<float, cudaTextureType1D, cudaReadModeElementType> B;
 texture<int2, cudaTextureType1D, cudaReadModeElementType> A_double;
 texture<int2, cudaTextureType1D, cudaReadModeElementType> B_double;
-texture<uint, cudaTextureType1D, cudaReadModeElementType> A_ptr_incrementer;
-texture<uint, cudaTextureType1D, cudaReadModeElementType> B_ptr_incrementer;
+
 
 //thread process
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,187 +22,13 @@ texture<uint, cudaTextureType1D, cudaReadModeElementType> B_ptr_incrementer;
 /********************************************/
 /* function for calculating root */
 /********************************************/
-// extern "C"
-// __global__
-// void
-// process_root 
-// (
-//  //FLOAT *A,  
-//  //FLOAT *B, 
-//  FLOAT *C, 
-//  int *A_dims_array, 
-//  int *B_dims_array, 
-//  int len,
-//  int interval, 
-//  int L_MAX,
-//  int *error_array,
-//  int error_array_num,
-//  int pid,
-//  int device_number
-// ) 
-// {
-//   int idx_x = blockIdx.x * blockDim.x + threadIdx.x;
-//   int idx_y = blockIdx.y * blockDim.y + threadIdx.y;
-//   int ii = blockIdx.z % len;
-//   int level = blockIdx.z / len;
-
-//   int A_dims[3] = { A_dims_array[level*3], A_dims_array[level*3+1], A_dims_array[level*3+2] };
-//   int B_dims[3] = { B_dims_array[ii*3], B_dims_array[ii*3+1], B_dims_array[ii*3+2] };
-//   int C_dims[2] = { A_dims[0] - B_dims[0] + 1, A_dims[1] - B_dims[1] + 1 };
-
-//   int C_x = C_dims[1]/device_number;
-  
-//   if(C_dims[1]%device_number != 0){
-//     C_x++;
-//   }
- 
-//   idx_x = idx_x + pid * C_x;
- 
-//   if(idx_x < C_x * pid  ||  idx_x >=  C_x * (pid + 1)){
-//     return ;
-//   }  
-
-//   if(0 <= ii && ii < len && 0 <= idx_x && idx_x < C_dims[1] && 0 <= idx_y && idx_y < C_dims[0] && interval <= level && level < L_MAX ) { 
-
-
-//     int num_features = A_dims[2];
-//     const int A_SQ = A_dims[0]*A_dims[1];
-//     const int B_SQ = B_dims[0]*B_dims[1];
-//     FLOAT add_val = 0;
-    
-//     int x = idx_x;
-//     int y = idx_y;
-//     int XA0 = A_dims[0]*x;
-
-    
-//     /* apply loop condition */
-//     for(int i=0; i<error_array_num; i++){
-//       if(error_array[i] == level){
-//         return;
-//       }
-//     }
-    
-    
-    
-//     /* adjust the location of pointer of C */
-//     FLOAT *dst;
-//     unsigned long long int pointer = (unsigned long long int)C;
-
-//     for(int a=interval; a<level; a++) {
-//       for(int b=0; b<len; b++) {
-//         int height = A_dims_array[a*3] - B_dims_array[b*3] + 1; 
-//         int width = A_dims_array[a*3 + 1] - B_dims_array[b*3 + 1] + 1;
-        
-//         /* error semantics */
-//         if (height < 1 || width < 1){
-//           printf("Invalid input in GPU\n");
-//           return;
-//         }
-        
-//         pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
-       
-//       }
-//     }
-
-//     for(int b=0; b<ii; b++){
-//       int height = A_dims_array[level*3] - B_dims_array[b*3] + 1;
-//       int width  = A_dims_array[level*3 + 1] - B_dims_array[b*3 + 1] + 1;
-
-//       /* error semantics */
-//       if (height < 1 || width < 1){
-//         printf("Invalid input in GPU\n");
-//         return;
-//       }
-      
-//       pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
-//     }
-    
-//     dst = (FLOAT *)pointer;
-    
-//     /* adjust the location of pointer of A */
-//     //unsigned long long int pointerA = (unsigned long long int)A;
-//     int A_index_ini = 0;
-//     for(int a=0; a<level; a++) {
-//       //      pointerA += (unsigned long long int)(A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2]*sizeof(FLOAT));
-//       A_index_ini += A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2];
-//     }
-    
-    
-//     /* adjust the location of pointer of B */
-//     //unsigned long long int pointerB = (unsigned long long int)B;
-//     int B_index_ini = 0;
-//     for(int b=0; b<ii; b++) {
-//       //      pointerB += (unsigned long long int)(B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2]*sizeof(FLOAT));
-//       B_index_ini += B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2];
-//     } 
-
-            
-//     for(int f = 0; f < num_features; f++) // num_features = 31
-//       {  
-//         // FLOAT *A_src = (FLOAT *)pointerA + f*A_SQ;      
-//         int A_index = A_index_ini + f*A_SQ;
-//         // FLOAT *B_src = (FLOAT *)pointerB + f*B_SQ;     
-//         int B_index = B_index_ini + f*B_SQ;
-        
-//         // FLOAT *A_src2 =A_src+XA0; 
-//         A_index += XA0;
-
-//         FLOAT val = 0;
-//         // FLOAT *A_off = A_src2+y;
-//         A_index += y;
-//         // FLOAT *B_off = B_src;
-        
-//         for (int xp = 0; xp < B_dims[1]; xp++) 
-//           {
-//             // FLOAT *A_temp = A_off;						
-//             int A_index_tmp = A_index;
-//             // FLOAT *B_temp = B_off;
-//             int B_index_tmp = B_index;
-	  
-//             for (int yp = 0; yp < B_dims[0]; yp++) 	  
-//               {
-//                 // val += *(A_temp++) * *(B_temp++);
-//                 if(sizeof(FLOAT) == sizeof(float)) // if configured to use single precision
-//                   {
-//                     FLOAT A_val = tex1Dfetch(A, A_index_tmp);
-//                     FLOAT B_val = tex1Dfetch(B, B_index_tmp);
-//                     val += A_val * B_val;
-//                   } 
-//                 else
-//                   {      // if configured to use double precision
-//                     int2 A_val = tex1Dfetch(A_double, A_index_tmp);
-//                     int2 B_val = tex1Dfetch(B_double, B_index_tmp);
-//                     val += __hiloint2double(A_val.y, A_val.x) * __hiloint2double(B_val.y, B_val.x);
-//                   }
-                
-//                 A_index_tmp++;
-//                 B_index_tmp++;
-//               }
-            
-//             // A_off+=A_dims[0];
-//             A_index += A_dims[0];
-//             // B_off+=B_dims[0];
-//             B_index += B_dims[0];
-            
-//           }
-        
-//         add_val += val;
-//       }
-    
-//     *(dst + (idx_x*C_dims[0] + idx_y)) += add_val;
-//   }
-  
-  
-//   return;
-// }
-
 extern "C"
 __global__
 void
 process_root 
 (
- // FLOAT *A,  
- // FLOAT *B, 
+ //FLOAT *A,  
+ //FLOAT *B, 
  FLOAT *C, 
  int *A_dims_array, 
  int *B_dims_array, 
@@ -211,22 +37,33 @@ process_root
  int L_MAX,
  int *error_array,
  int error_array_num,
- // int ii,
- int level
+ int pid,
+ int device_number
 ) 
 {
   int idx_x = blockIdx.x * blockDim.x + threadIdx.x;
   int idx_y = blockIdx.y * blockDim.y + threadIdx.y;
-  // int ii = blockIdx.z % len;
-  //  int ii = blockIdx.z;
-  int ii = threadIdx.z;
-  // int level = blockIdx.z / len;
+  int ii = blockIdx.z % len;
+  int level = blockIdx.z / len;
 
   int A_dims[3] = { A_dims_array[level*3], A_dims_array[level*3+1], A_dims_array[level*3+2] };
   int B_dims[3] = { B_dims_array[ii*3], B_dims_array[ii*3+1], B_dims_array[ii*3+2] };
   int C_dims[2] = { A_dims[0] - B_dims[0] + 1, A_dims[1] - B_dims[1] + 1 };
 
+  int C_x = C_dims[1]/device_number;
+  
+  if(C_dims[1]%device_number != 0){
+    C_x++;
+  }
+ 
+  idx_x = idx_x + pid * C_x;
+ 
+  if(idx_x < C_x * pid  ||  idx_x >=  C_x * (pid + 1)){
+    return ;
+  }  
+
   if(0 <= ii && ii < len && 0 <= idx_x && idx_x < C_dims[1] && 0 <= idx_y && idx_y < C_dims[0] && interval <= level && level < L_MAX ) { 
+
 
     int num_features = A_dims[2];
     const int A_SQ = A_dims[0]*A_dims[1];
@@ -236,6 +73,7 @@ process_root
     int x = idx_x;
     int y = idx_y;
     int XA0 = A_dims[0]*x;
+
     
     /* apply loop condition */
     for(int i=0; i<error_array_num; i++){
@@ -243,6 +81,8 @@ process_root
         return;
       }
     }
+    
+    
     
     /* adjust the location of pointer of C */
     FLOAT *dst;
@@ -280,74 +120,68 @@ process_root
     dst = (FLOAT *)pointer;
     
     /* adjust the location of pointer of A */
-    // //    unsigned long long int pointerA = (unsigned long long int)A;
-    // int A_index_ini = 0;
-    // for(int a=0; a<level; a++) {
-    //   //      pointerA += (unsigned long long int)(A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2]*sizeof(FLOAT));
-    //   A_index_ini += A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2];
-    // }
-    int A_index_ini = tex1Dfetch(A_ptr_incrementer, level);
+    //unsigned long long int pointerA = (unsigned long long int)A;
+    int A_index_ini = 0;
+    for(int a=0; a<level; a++) {
+      //      pointerA += (unsigned long long int)(A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2]*sizeof(FLOAT));
+      A_index_ini += A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2];
+    }
     
     
     /* adjust the location of pointer of B */
-    //    unsigned long long int pointerB = (unsigned long long int)B;
-    // int B_index_ini = 0;
-    // for(int b=0; b<ii; b++) {
-    //   //      pointerB += (unsigned long long int)(B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2]*sizeof(FLOAT));
-    //   B_index_ini += B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2];
-    // } 
-    int B_index_ini = tex1Dfetch(B_ptr_incrementer, ii);
+    //unsigned long long int pointerB = (unsigned long long int)B;
+    int B_index_ini = 0;
+    for(int b=0; b<ii; b++) {
+      //      pointerB += (unsigned long long int)(B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2]*sizeof(FLOAT));
+      B_index_ini += B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2];
+    } 
 
             
     for(int f = 0; f < num_features; f++) // num_features = 31
       {  
-        //        FLOAT *A_src = (FLOAT *)pointerA + f*A_SQ;      
+        // FLOAT *A_src = (FLOAT *)pointerA + f*A_SQ;      
         int A_index = A_index_ini + f*A_SQ;
-        //        FLOAT *B_src = (FLOAT *)pointerB + f*B_SQ;     
+        // FLOAT *B_src = (FLOAT *)pointerB + f*B_SQ;     
         int B_index = B_index_ini + f*B_SQ;
         
-        //        FLOAT *A_src2 =A_src+XA0; 
+        // FLOAT *A_src2 =A_src+XA0; 
         A_index += XA0;
 
         FLOAT val = 0;
-        //        FLOAT *A_off = A_src2+y;
+        // FLOAT *A_off = A_src2+y;
         A_index += y;
-        //        FLOAT *B_off = B_src;
+        // FLOAT *B_off = B_src;
         
         for (int xp = 0; xp < B_dims[1]; xp++) 
           {
-            //            FLOAT *A_temp = A_off;						
+            // FLOAT *A_temp = A_off;						
             int A_index_tmp = A_index;
-            //            FLOAT *B_temp = B_off;
+            // FLOAT *B_temp = B_off;
             int B_index_tmp = B_index;
 	  
             for (int yp = 0; yp < B_dims[0]; yp++) 	  
               {
                 // val += *(A_temp++) * *(B_temp++);
-                //               if(sizeof(FLOAT) == sizeof(float)) // if configured to use single precision
-#ifdef USE_FLOAT_AS_DECIMAL
+                if(sizeof(FLOAT) == sizeof(float)) // if configured to use single precision
                   {
                     FLOAT A_val = tex1Dfetch(A, A_index_tmp);
                     FLOAT B_val = tex1Dfetch(B, B_index_tmp);
                     val += A_val * B_val;
-                    //                    val += *(A_temp++) * *(B_temp++);
                   } 
-                  //                else
-#else
+                else
                   {      // if configured to use double precision
                     int2 A_val = tex1Dfetch(A_double, A_index_tmp);
                     int2 B_val = tex1Dfetch(B_double, B_index_tmp);
                     val += __hiloint2double(A_val.y, A_val.x) * __hiloint2double(B_val.y, B_val.x);
                   }
-#endif
                 
                 A_index_tmp++;
                 B_index_tmp++;
               }
             
-            //            A_off+=A_dims[0];
+            // A_off+=A_dims[0];
             A_index += A_dims[0];
-            //            B_off+=B_dims[0];
+            // B_off+=B_dims[0];
             B_index += B_dims[0];
             
           }
@@ -363,179 +197,17 @@ process_root
 }
 
 
+
 /********************************************/
 /* function for calculating part */
 /********************************************/
-// extern "C"
-// __global__
-// void
-// process_part
-// (
-//  //FLOAT *A,  
-//  //FLOAT *B, 
-//  FLOAT *C, 
-//  int *A_dims_array, 
-//  int *B_dims_array, 
-//  int len,
-//  int interval, 
-//  int L_MAX,
-//  int *error_array,
-//  int error_array_num,
-//  int pid,
-//  int device_number
-// ) 
-// {
-//   int idx_x = blockIdx.x * blockDim.x + threadIdx.x;
-//   int idx_y = blockIdx.y * blockDim.y + threadIdx.y;
-//   int ii = blockIdx.z % len;
-//   int level = blockIdx.z / len; 
-
-//   int A_dims[3] = { A_dims_array[level*3], A_dims_array[level*3+1], A_dims_array[level*3+2] };
-//   int B_dims[3] = { B_dims_array[ii*3], B_dims_array[ii*3+1], B_dims_array[ii*3+2] };
-//   int C_dims[2] = { A_dims[0] - B_dims[0] + 1, A_dims[1] - B_dims[1] + 1 };
-
-//   int C_x = C_dims[1]/device_number;
-
-//   if(C_dims[1]%device_number != 0){
-//     C_x++;
-//   }  
- 
-//   idx_x = idx_x + pid * C_x;
- 
-//   if(idx_x < C_x * pid  ||  idx_x >=  C_x * (pid + 1)){
-//     return ;
-//   }  
-
-//   if(0 <= ii && ii < len && 0 <= idx_x && idx_x < C_dims[1] && 0 <= idx_y && idx_y < C_dims[0] && 0 <= level && level < (L_MAX - interval) ) {
-//     int num_features = A_dims[2];
-//     const int A_SQ = A_dims[0]*A_dims[1];
-//     const int B_SQ = B_dims[0]*B_dims[1];
-//     FLOAT add_val = 0;
-
-//     int x = idx_x;
-//     int y = idx_y;
-//     int XA0 = A_dims[0]*x;
-    
-//     /* apply loop condition */
-//     for(int i=0; i<error_array_num; i++){
-//       if(error_array[i] == level)
-//         return;
-//     }
-    
-//     /* adjust the location of pointer of C */
-//     FLOAT *dst;
-//     unsigned long long int pointer = (unsigned long long int)C;
-//     for(int a=0; a<level; a++) {
-//       for(int b=0; b<len; b++){
-//         int height = A_dims_array[a*3] - B_dims_array[b*3] + 1;
-//         int width = A_dims_array[a*3 + 1] - B_dims_array[b*3 + 1] + 1;
-        
-//         /* error semantics */
-//         if(height < 1 || width < 1){
-//           printf("Invalid input in GPU\n");
-//           return;
-//         }
-        
-//         pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
-//       }
-//     }
-
-//     for(int b=0; b<ii; b++){
-//       int height = A_dims_array[level*3] - B_dims_array[b*3] + 1;
-//       int width  = A_dims_array[level*3 + 1] - B_dims_array[b*3 + 1] + 1;
-
-//        /* error semantics */
-//         if(height < 1 || width < 1){
-//           printf("Invalid input in GPU\n");
-//           return;
-//         }
-
-//       pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
-//     }
-    
-
-//     dst = (FLOAT *)pointer;
-
-//     /* adjust the location of pointer of A */
-//     // unsigned long long int pointerA = (unsigned long long int)A;
-//     int A_index_ini = 0;
-//     for(int a=0; a<level; a++) {
-//       // pointerA += (unsigned long long int)(A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2]*sizeof(FLOAT));
-//       A_index_ini += A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2];
-//     }
-    
-//     /* adjust the location of pointer of B */
-//     // unsigned long long int pointerB = (unsigned long long int)B;
-//     int B_index_ini = 0;
-//     for(int b=0; b<ii; b++) {
-//       // pointerB += (unsigned long long int)(B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2]*sizeof(FLOAT));
-//       B_index_ini += B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2];
-//     } 
-    
-//     for(int f = 0; f < num_features; f++) // num_features = 31
-//       {  
-//         // FLOAT *A_src = (FLOAT *)pointerA + f*A_SQ;      
-//         int A_index = A_index_ini + f*A_SQ;
-//         // FLOAT *B_src = (FLOAT *)pointerB + f*B_SQ;     
-//         int B_index = B_index_ini + f*B_SQ;
-        
-//         // FLOAT *A_src2 =A_src+XA0; 
-//         A_index += XA0;
-
-//         FLOAT val = 0;
-//         // FLOAT *A_off = A_src2+y;
-//         A_index += y;
-//         // FLOAT *B_off = B_src;
-        
-//         for (int xp = 0; xp < B_dims[1]; xp++) 
-//           {
-//             // FLOAT *A_temp = A_off;						
-//             int A_index_tmp = A_index;
-//             // FLOAT *B_temp = B_off;	  
-//             int B_index_tmp = B_index;
- 
-//             for (int yp = 0; yp < B_dims[0]; yp++) 	  
-//               {
-//                 // val += *(A_temp++) * *(B_temp++);
-//                 if(sizeof(FLOAT) == sizeof(float)) // if configured to use single precision
-//                   {
-//                     FLOAT A_val = tex1Dfetch(A, A_index_tmp);
-//                     FLOAT B_val = tex1Dfetch(B, B_index_tmp);
-//                     val += A_val * B_val;
-//                   }
-//                 else            // if configured to use double precision
-//                   {
-//                     int2 A_val = tex1Dfetch(A_double, A_index_tmp);
-//                     int2 B_val = tex1Dfetch(B_double, B_index_tmp);
-//                     val += __hiloint2double(A_val.y, A_val.x) * __hiloint2double(B_val.y, B_val.x);
-//                   }
-                
-//                 A_index_tmp++;
-//                 B_index_tmp++;
-//               }
-            
-//             // A_off+=A_dims[0];
-//             A_index += A_dims[0];
-//             // B_off+=B_dims[0];
-//             B_index += B_dims[0];
-            
-//           }
-//         add_val += val;
-//       }
-
-//     *(dst + (idx_x*C_dims[0] + idx_y)) += add_val;
-//   }
-  
-//   return;
-// }
-
 extern "C"
 __global__
 void
 process_part
 (
- // FLOAT *A,  
- // FLOAT *B, 
+ //FLOAT *A,  
+ //FLOAT *B, 
  FLOAT *C, 
  int *A_dims_array, 
  int *B_dims_array, 
@@ -544,23 +216,32 @@ process_part
  int L_MAX,
  int *error_array,
  int error_array_num,
- // int ii,
- int level
+ int pid,
+ int device_number
 ) 
 {
   int idx_x = blockIdx.x * blockDim.x + threadIdx.x;
   int idx_y = blockIdx.y * blockDim.y + threadIdx.y;
-  // int ii = blockIdx.z % len;
-  int ii = blockIdx.z;
-  //  int ii = threadIdx.z;
-  // int level = blockIdx.z / len; 
+  int ii = blockIdx.z % len;
+  int level = blockIdx.z / len; 
 
   int A_dims[3] = { A_dims_array[level*3], A_dims_array[level*3+1], A_dims_array[level*3+2] };
   int B_dims[3] = { B_dims_array[ii*3], B_dims_array[ii*3+1], B_dims_array[ii*3+2] };
   int C_dims[2] = { A_dims[0] - B_dims[0] + 1, A_dims[1] - B_dims[1] + 1 };
 
-  if(0 <= ii && ii < len && 0 <= idx_x && idx_x < C_dims[1] && 0 <= idx_y && idx_y < C_dims[0] && 0 <= level && level < (L_MAX - interval) ) {
+  int C_x = C_dims[1]/device_number;
 
+  if(C_dims[1]%device_number != 0){
+    C_x++;
+  }  
+ 
+  idx_x = idx_x + pid * C_x;
+ 
+  if(idx_x < C_x * pid  ||  idx_x >=  C_x * (pid + 1)){
+    return ;
+  }  
+
+  if(0 <= ii && ii < len && 0 <= idx_x && idx_x < C_dims[1] && 0 <= idx_y && idx_y < C_dims[0] && 0 <= level && level < (L_MAX - interval) ) {
     int num_features = A_dims[2];
     const int A_SQ = A_dims[0]*A_dims[1];
     const int B_SQ = B_dims[0]*B_dims[1];
@@ -606,76 +287,71 @@ process_part
 
       pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
     }
+    
 
     dst = (FLOAT *)pointer;
 
     /* adjust the location of pointer of A */
-    // //    unsigned long long int pointerA = (unsigned long long int)A;
-    // int A_index_ini = 0;
-    // for(int a=0; a<level; a++) {
-    //   //      pointerA += (unsigned long long int)(A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2]*sizeof(FLOAT));
-    //   A_index_ini += A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2];
-    // }
-    int A_index_ini = tex1Dfetch(A_ptr_incrementer, level);
+    // unsigned long long int pointerA = (unsigned long long int)A;
+    int A_index_ini = 0;
+    for(int a=0; a<level; a++) {
+      // pointerA += (unsigned long long int)(A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2]*sizeof(FLOAT));
+      A_index_ini += A_dims_array[a*3]*A_dims_array[a*3 + 1]*A_dims_array[a*3 + 2];
+    }
     
     /* adjust the location of pointer of B */
-    // //    unsigned long long int pointerB = (unsigned long long int)B;
-    // int B_index_ini = 0;
-    // for(int b=0; b<ii; b++) {
-    //   //      pointerB += (unsigned long long int)(B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2]*sizeof(FLOAT));
-    //   B_index_ini += B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2];
-    // } 
-    int B_index_ini = tex1Dfetch(B_ptr_incrementer, ii);
+    // unsigned long long int pointerB = (unsigned long long int)B;
+    int B_index_ini = 0;
+    for(int b=0; b<ii; b++) {
+      // pointerB += (unsigned long long int)(B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2]*sizeof(FLOAT));
+      B_index_ini += B_dims_array[b*3]*B_dims_array[b*3 + 1]*B_dims_array[b*3 + 2];
+    } 
     
     for(int f = 0; f < num_features; f++) // num_features = 31
       {  
-        //        FLOAT *A_src = (FLOAT *)pointerA + f*A_SQ;      
+        // FLOAT *A_src = (FLOAT *)pointerA + f*A_SQ;      
         int A_index = A_index_ini + f*A_SQ;
-        //        FLOAT *B_src = (FLOAT *)pointerB + f*B_SQ;     
+        // FLOAT *B_src = (FLOAT *)pointerB + f*B_SQ;     
         int B_index = B_index_ini + f*B_SQ;
         
-        //        FLOAT *A_src2 =A_src+XA0; 
+        // FLOAT *A_src2 =A_src+XA0; 
         A_index += XA0;
 
         FLOAT val = 0;
-        //        FLOAT *A_off = A_src2+y;
+        // FLOAT *A_off = A_src2+y;
         A_index += y;
-        //        FLOAT *B_off = B_src;
+        // FLOAT *B_off = B_src;
         
         for (int xp = 0; xp < B_dims[1]; xp++) 
           {
-            //            FLOAT *A_temp = A_off;						
+            // FLOAT *A_temp = A_off;						
             int A_index_tmp = A_index;
-            //             FLOAT *B_temp = B_off;	  
+            // FLOAT *B_temp = B_off;	  
             int B_index_tmp = B_index;
  
             for (int yp = 0; yp < B_dims[0]; yp++) 	  
               {
                 // val += *(A_temp++) * *(B_temp++);
-                //                if(sizeof(FLOAT) == sizeof(float)) // if configured to use single precision
-#ifdef USE_FLOAT_AS_DECIMAL
+                if(sizeof(FLOAT) == sizeof(float)) // if configured to use single precision
                   {
                     FLOAT A_val = tex1Dfetch(A, A_index_tmp);
                     FLOAT B_val = tex1Dfetch(B, B_index_tmp);
                     val += A_val * B_val;
-                    //                    val += *(A_temp++) * *(B_temp++);
                   }
-                  //                else            // if configured to use double precision
-#else
+                else            // if configured to use double precision
                   {
                     int2 A_val = tex1Dfetch(A_double, A_index_tmp);
                     int2 B_val = tex1Dfetch(B_double, B_index_tmp);
                     val += __hiloint2double(A_val.y, A_val.x) * __hiloint2double(B_val.y, B_val.x);
                   }
-#endif
                 
                 A_index_tmp++;
                 B_index_tmp++;
               }
             
-            //            A_off+=A_dims[0];
+            // A_off+=A_dims[0];
             A_index += A_dims[0];
-            //            B_off+=B_dims[0];
+            // B_off+=B_dims[0];
             B_index += B_dims[0];
             
           }
@@ -1989,6 +1665,9 @@ resize
   int channel = blockIdx.z;
 
   FLOAT *dst = dst_top + tex1Dfetch(image_idx_incrementer, level) + channel*dst_height*dst_width;
+  // unsigned long long int dst_ptr = (unsigned long long int)dst_top +
+  //   	  (unsigned long long int)(tex1Dfetch(image_idx_incrementer, level) + channel*dst_height*dst_width)*sizeof(FLOAT);
+  // FLOAT *dst = (FLOAT *)dst_ptr;
 
   FLOAT src_x_decimal = wfactor * dst_x + 0.5f;
   FLOAT src_y_decimal = hfactor * dst_y + 0.5f;

@@ -12,3 +12,11 @@ CAR_TRACKING:
 clean:
 	make --directory="CAR_TRACKING/" --file=CAR_TRACKING.makefile clean
 
+# Install executable file to /usr/local/geye_with_cam/bin
+install:
+	cp ./CAR_TRACKING/2010_2_3.txt ../../bin/car_detecter/2010_2_3.txt
+	cp ./CAR_TRACKING/car_comp.csv ../../bin/car_detecter/car_comp.csv
+	cp ./CAR_TRACKING/car_root.csv ../../bin/car_detecter/car_root.csv
+	cp ./CAR_TRACKING/car_part.csv ../../bin/car_detecter/car_part.csv
+	cp ./gccRelease/GPU_function.cubin ../../bin/car_detecter/GPU_function.cubin
+	cp ./gccRelease/CAR_TRACKING.exe ../../bin/car_detecter/car_detecter

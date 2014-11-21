@@ -1,7 +1,7 @@
 # Compiler flags...
 CPP_COMPILER = g++
 C_COMPILER = gcc
-CUDA_ARCH=sm_21
+CUDA_ARCH=sm_35
 CUDA_REG_CONF_OPTION = -Xptxas -v  --maxrregcount 32 
 CUDA_COMPILER = nvcc -arch=$(CUDA_ARCH) -cubin $(CUDA_REG_CONF_OPTION)
 
@@ -18,8 +18,9 @@ Debug_Library_Path= -L/usr/local/lib -L$(CUDA_LIB)
 Release_Library_Path= -L/usr/local/lib -L$(CUDA_LIB)
 
 # Additional libraries...
-Debug_Libraries=-Wl,--start-group   -Wl,--end-group -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_ts -lopencv_video -lopencv_videostab -lcuda -lm -lpthread -lstdc++
-Release_Libraries = -Wl,--start-group   -Wl,--end-group -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_ts -lopencv_video -lopencv_videostab -lstdc++ -lcuda -lm -lpthread 
+SHM_LIB	= -lrt
+Debug_Libraries=-Wl,--start-group   -Wl,--end-group -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_ts -lopencv_video -lopencv_videostab -lcuda -lm $(SHM_LIB) -lpthread -lstdc++
+Release_Libraries = -Wl,--start-group   -Wl,--end-group -lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_ts -lopencv_video -lopencv_videostab -lstdc++ -lcuda -lm $(SHM_LIB) -lpthread -lstdc++
 
 # Preprocessor definitions...
 Debug_Preprocessor_Definitions=-D GCC_BUILD -D _DEBUG -D _CONSOLE 
@@ -39,7 +40,7 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/detect.o gccDebug/dt.o gccDebug/fconvsMT.o gccDebug/featurepyramid.o gccDebug/get_boxes.o gccDebug/laser_func.o gccDebug/load_model.o gccDebug/main.o gccDebug/nms.o gccDebug/resize.o gccDebug/showboxes.o gccDebug/tracking.o gccDebug/conv.o gccDebug/GPU_init.o gccDebug/GPU_function.cubin gccDebug/dt_GPU.o gccDebug/resize_GPU.o	
+Debug: create_folders gccDebug/detect.o gccDebug/dt.o gccDebug/fconvsMT.o gccDebug/featurepyramid.o gccDebug/get_boxes.o gccDebug/laser_func.o gccDebug/load_model.o gccDebug/main.o gccDebug/nms.o gccDebug/resize.o gccDebug/showboxes.o gccDebug/tracking.o gccDebug/conv.o gccDebug/GPU_init.o gccDebug/GPU_function.cubin gccDebug/dt_GPU.o gccDebug/resize_GPU.o 	
 	gcc gccDebug/detect.o gccDebug/dt.o gccDebug/fconvsMT.o gccDebug/featurepyramid.o gccDebug/get_boxes.o gccDebug/laser_func.o gccDebug/load_model.o gccDebug/main.o gccDebug/nms.o gccDebug/resize.o gccDebug/showboxes.o gccDebug/tracking.o  gccDebug/conv.o gccDebug/GPU_init.o gccDebug/dt_GPU.o gccDebug/resize_GPU.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/CAR_TRACKING.exe
 
 # Compiles file detect.cpp for the Debug configuration...
