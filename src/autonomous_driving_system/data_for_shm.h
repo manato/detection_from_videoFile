@@ -40,22 +40,6 @@
 /************************************************/
 /* information of the location of shared memory */
 /************************************************/
-/* #define INPUT_SHM_PATH "/home/hirabayashi/dev/autonomous_driving_system/input_file" */
-/* #define OUTPUT_SHM_PATH "/home/hirabayashi/dev/autonomous_driving_system/output_file" */
-/* #define HEIGHT_SHM_PATH "/home/hirabayashi/dev/autonomous_driving_system/height_file" */
-/* #define WIDTH_SHM_PATH "/home/hirabayashi/dev/autonomous_driving_system/width_file" */
-/* #define SIZE_SHM_PATH "/home/hirabayashi/dev/autonomous_driving_system/size_file" */
-//#ifdef RELEASE
-/* #define INPUT_SHM_PATH "/usr/local/geye_with_cam/shared_memory/input_file" */
-/* #define OUTPUT_SHM_PATH "/usr/local/geye_with_cam/shared_memory/output_file" */
-/* #define HEIGHT_SHM_PATH "/usr/local/geye_with_cam/shared_memory/height_file" */
-/* #define WIDTH_SHM_PATH "/usr/local/geye_with_cam/shared_memory/width_file" */
-/* #define SIZE_SHM_PATH "/usr/local/geye_with_cam/shared_memory/size_file" */
-/* #define IMGUPD_SHM_PATH "/usr/local/geye_with_cam/shared_memory/imgupd_checker" */
-/* #define CAR_FPS_SHM_PATH "/usr/local/geye_with_cam/shared_memory/car_fps" */
-/* #define PDS_FPS_SHM_PATH "/usr/local/geye_with_cam/shared_memory/pds_fps" */
-/* #define SGN_FPS_SHM_PATH "/usr/local/geye_with_cam/shared_memory/sgn_fps" */
-//#else
 #define INPUT_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/input_file"
 #define OUTPUT_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/output_file"
 #define HEIGHT_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/height_file"
@@ -66,7 +50,6 @@
 #define PDS_FPS_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/pds_fps"
 #define SGN_FPS_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/sgn_fps"
 #define PROCESS_CHECK_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/process_check"
-//#endif  /* ifdef RELEASE */
 
 /*********************************************************/
 /* definition of FOR_INPUT/OUTPUT used in sign_detection */
@@ -85,12 +68,7 @@ union semun {
     struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
     unsigned short *array;      /* array for GETALL, SETALL */
 };
-//#define SEM_PATH "/home/hirabayashi/dev/autonomous_driving_system/semaphore"
-//#ifdef RELEASE
-/* #define SEM_PATH "/usr/local/geye_with_cam/shared_memory/semaphore" */
-//#else
 #define SEM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/semaphore"
-//#endif  /* ifdef RELEASE */
 
 /* the function for semaphore control */
 void My_sem_operation(int p_semid, int p_op)
@@ -112,28 +90,16 @@ void My_sem_operation(int p_semid, int p_op)
 /*************************************/
 /* information of reader-writer lock */
 /*************************************/
-#ifdef RELEASE
-#define RWLOCK_SHM_PATH "/usr/local/geye_with_cam/shared_memory/rwlock"
-#else
 #define RWLOCK_SHM_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/rwlock"
-#endif  /* ifdef RELEASE */
 
 
 /************************************************************************************/
 /* data and operation for ring buffer which contains coordinates of detected object */
 /************************************************************************************/
-/* #define RBUF_PATH "/home/hirabayashi/dev/autonomous_driving_system/rbuf" */
-/* #define RBUF_HEAD_PATH "/home/hirabayashi/dev/autonomous_driving_system/rbuf_head" */
-/* #define RBUF_TAIL_PATH "/home/hirabayashi/dev/autonomous_driving_system/rbuf_tail" */
-//#ifdef RELEASE
-/* #define RBUF_PATH "/usr/local/geye_with_cam/shared_memory/rbuf" */
-/* #define RBUF_HEAD_PATH "/usr/local/geye_with_cam/shared_memory/rbuf_head" */
-/* #define RBUF_TAIL_PATH "/usr/local/geye_with_cam/shared_memory/rbuf_tail" */
-//#else
 #define RBUF_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/rbuf"
 #define RBUF_HEAD_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/rbuf_head"
 #define RBUF_TAIL_PATH "/home/hirabayashi/detection_from_videoFile/shared_memory/rbuf_tail"
-//#endif
+
 
 
 #define MAX_OBJECT_NUM 64 /* # of max ofjects detected at the same time */
